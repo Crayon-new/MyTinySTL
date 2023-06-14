@@ -22,6 +22,7 @@
 #include "memory.h"
 #include "util.h"
 #include "exceptdef.h"
+#include "algo.h"
 
 namespace mystl
 {
@@ -415,6 +416,7 @@ vector<T>::emplace(const_iterator pos, Args&& ...args)
     ++new_end;
     mystl::copy_backward(xpos, end_ - 1, end_);
     *xpos = value_type(mystl::forward<Args>(args)...);
+    end_ = new_end;
   }
   else
   {
@@ -601,9 +603,9 @@ template <class Iter>
 void vector<T>::
 range_init(Iter first, Iter last)
 {
-  const size_type init_size = mystl::max(static_cast<size_type>(last - first),
-                                         static_cast<size_type>(16));
-  init_space(static_cast<size_type>(last - first), init_size);
+  const size_type len = mystl::distance(first, last);
+  const size_type init_size = mystl::max(len, static_cast<size_type>(16));
+  init_space(len, init_size);
   mystl::uninitialized_copy(first, last, begin_);
 }
 
@@ -895,7 +897,7 @@ bool operator==(const vector<T>& lhs, const vector<T>& rhs)
 template <class T>
 bool operator<(const vector<T>& lhs, const vector<T>& rhs)
 {
-  return mystl::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), lhs.end());
+  return mystl::lexicographical_compare(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
 }
 
 template <class T>
